@@ -22,7 +22,6 @@ import { usePerformanceMode } from '../hooks/usePerformanceMode';
 import { AudioEffect, EQParameters } from '../types/audio';
 
 export const StudioScreen: React.FC = () => {
-  // Hooks principales
   const {
     mixerState,
     loadTrack,
@@ -41,6 +40,8 @@ export const StudioScreen: React.FC = () => {
     isSaving,
     createProject,
     saveProject,
+    loadProject,
+    deleteProject,
     exportProject
   } = useProjectManager();
   
@@ -51,7 +52,6 @@ export const StudioScreen: React.FC = () => {
     togglePerformanceMode
   } = usePerformanceMode(mixerState.tracks, mixerState.isPlaying);
 
-  // Estados de UI
   const [isLoading, setIsLoading] = useState(false);
   const [showEQ, setShowEQ] = useState(false);
   const [showAdvancedEffects, setShowAdvancedEffects] = useState(false);
@@ -60,14 +60,12 @@ export const StudioScreen: React.FC = () => {
   const [showProjects, setShowProjects] = useState(false);
   const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
 
-  // Crear proyecto automáticamente al iniciar
   useEffect(() => {
     if (!currentProject && mixerState.tracks.length === 0) {
       createProject('Nuevo Proyecto');
     }
   }, []);
 
-  // Auto-guardar cuando cambian las pistas
   useEffect(() => {
     if (currentProject && mixerState.tracks.length > 0) {
       const updatedProject = {
@@ -176,7 +174,7 @@ export const StudioScreen: React.FC = () => {
       {/* Header Profesional */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.headerTitle}>🎚️ STUDIO PRO</Text>
+          <Text style={styles.headerTitle}>🎚️ AudioWorkshopFixed</Text>
           {currentProject && (
             <Text style={styles.projectName}>
               {currentProject.name} {isSaving && '💾'}
@@ -198,6 +196,10 @@ export const StudioScreen: React.FC = () => {
           >
             <Text style={styles.headerButtonText}>📊</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity style={styles.headerButton} onPress={() => setShowProjects(true)}>
+            <Text style={styles.headerButtonText}>📁</Text>
+          </TouchableOpacity>
           
           <TouchableOpacity style={styles.headerButton} onPress={handleExportProject}>
             <Text style={styles.headerButtonText}>📤</Text>
@@ -210,7 +212,6 @@ export const StudioScreen: React.FC = () => {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Performance Monitor */}
         {showPerformance && (
           <PerformanceMonitor
             metrics={metrics}
@@ -220,16 +221,13 @@ export const StudioScreen: React.FC = () => {
           />
         )}
 
-        {/* Analytics */}
         {showAnalytics && <AudioAnalytics analytics={analytics} />}
 
-        {/* Waveform Analyzer */}
         <WaveformAnalyzer 
           isPlaying={mixerState.isPlaying} 
           tracks={mixerState.tracks} 
         />
 
-        {/* Audio Mixer */}
         <AudioMixer
           tracks={mixerState.tracks}
           onTrackVolumeChange={setTrackVolume}
@@ -239,10 +237,9 @@ export const StudioScreen: React.FC = () => {
           onAdvancedEffects={openAdvancedEffects}
         />
 
-        {/* Estado vacío */}
         {mixerState.tracks.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>🚀 Bienvenido a Audio Workshop Pro</Text>
+            <Text style={styles.emptyTitle}>🚀 Bienvenido a AudioWorkshopFixed</Text>
             <Text style={styles.emptyText}>
               Características profesionales:{'\n'}
               • Mezclador multipista avanzado{'\n'}
@@ -257,7 +254,6 @@ export const StudioScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Stats rápidas */}
         {mixerState.tracks.length > 0 && (
           <View style={styles.quickStats}>
             <Text style={styles.quickStatsText}>
@@ -269,7 +265,6 @@ export const StudioScreen: React.FC = () => {
         )}
       </ScrollView>
 
-      {/* Controls Footer */}
       <View style={styles.footer}>
         <TouchableOpacity 
           style={[styles.footerButton, styles.effectsButton]}
@@ -308,7 +303,6 @@ export const StudioScreen: React.FC = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Modals */}
       <EqualizerPanel
         visible={showEQ}
         onEQChange={handleEQChange}
@@ -320,18 +314,63 @@ export const StudioScreen: React.FC = () => {
         onEffectApply={handleAdvancedEffect}
         onClose={() => setShowAdvancedEffects(false)}
       />
+
+      <Modal visible={showProjects} animationType="slide" transparent={true}>
+        <View style={styles.projectsOverlay}>
+          <View style={styles.projectsModal}>
+            <Text style={styles.projectsTitle}>📁 Mis Proyectos</Text>
+
+            <ScrollView style={{ maxHeight: 400 }}>
+              {projects.length === 0 ? (
+                <Text style={styles.noProjects}>Aún no hay proyectos creados</Text>
+              ) : (
+                projects.map((p) => (
+                  <View key={p.id} style={styles.projectItem}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.projectNameModal}>{p.name}</Text>
+                      <Text style={styles.projectDate}>
+                        Creado: {new Date(p.createdAt).toLocaleDateString()}
+                      </Text>
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.loadButton}
+                      onPress={() => {
+                        loadProject(p.id);
+                        setShowProjects(false);
+                        Alert.alert('Proyecto cargado', `Se abrió: ${p.name}`);
+                      }}
+                    >
+                      <Text style={styles.loadButtonText}>📂 Abrir</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => deleteProject(p.id)}
+                    >
+                      <Text style={styles.deleteButtonText}>🗑️</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.closeProjectsButton}
+              onPress={() => setShowProjects(false)}
+            >
+              <Text style={styles.closeProjectsText}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1a1a1a'
-  },
-  scrollView: {
-    flex: 1,
-  },
+  container: { flex: 1, backgroundColor: '#1a1a1a' },
+  scrollView: { flex: 1 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -341,34 +380,18 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#333'
   },
-  headerLeft: {
-    flex: 1,
-  },
-  headerTitle: {
-    color: '#00ff88',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 2,
-  },
-  projectName: {
-    color: '#888',
-    fontSize: 12,
-  },
-  headerControls: {
-    flexDirection: 'row',
-    gap: 8
-  },
+  headerLeft: { flex: 1 },
+  headerTitle: { color: '#00ff88', fontSize: 20, fontWeight: 'bold', marginBottom: 2 },
+  projectName: { color: '#888', fontSize: 12 },
+  headerControls: { flexDirection: 'row', gap: 8 },
   headerButton: {
     padding: 10,
     backgroundColor: '#333',
     borderRadius: 8,
     minWidth: 40,
-    alignItems: 'center',
+    alignItems: 'center'
   },
-  headerButtonText: {
-    color: 'white',
-    fontSize: 16
-  },
+  headerButtonText: { color: 'white', fontSize: 16 },
   emptyState: {
     alignItems: 'center',
     padding: 40,
@@ -376,42 +399,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#2a2a2a',
     borderRadius: 12
   },
-  emptyTitle: {
-    color: '#00ff88',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    textAlign: 'center'
-  },
-  emptyText: {
-    color: '#888',
-    textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 20,
-  },
-  getStartedButton: {
-    backgroundColor: '#00cc66',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  getStartedText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  quickStats: {
-    backgroundColor: '#2a2a2a',
-    padding: 12,
-    margin: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  quickStatsText: {
-    color: '#888',
-    fontSize: 12,
-    fontWeight: '600',
-  },
+  emptyTitle: { color: '#00ff88', fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' },
+  emptyText: { color: '#888', textAlign: 'center', lineHeight: 20, marginBottom: 20 },
+  getStartedButton: { backgroundColor: '#00cc66', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 8 },
+  getStartedText: { color: 'white', fontWeight: 'bold', fontSize: 16 },
+  quickStats: { backgroundColor: '#2a2a2a', padding: 12, margin: 10, borderRadius: 8, alignItems: 'center' },
+  quickStatsText: { color: '#888', fontSize: 12, fontWeight: '600' },
   footer: {
     flexDirection: 'row',
     padding: 15,
@@ -420,31 +413,37 @@ const styles = StyleSheet.create({
     borderTopColor: '#333',
     backgroundColor: '#2a2a2a'
   },
-  footerButton: {
+  footerButton: { flex: 1, padding: 15, borderRadius: 12, alignItems: 'center', justifyContent: 'center', minHeight: 50 },
+  effectsButton: { backgroundColor: '#8a2be2', flex: 0.8 },
+  addButton: { backgroundColor: '#00cc66' },
+  playButton: { backgroundColor: '#0066cc' },
+  pauseButton: { backgroundColor: '#cc3300' },
+  footerButtonText: { color: 'white', fontWeight: 'bold', fontSize: 14, textAlign: 'center' },
+  projectsOverlay: {
     flex: 1,
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
-    minHeight: 50,
+    alignItems: 'center'
   },
-  effectsButton: {
-    backgroundColor: '#8a2be2', // Purple
-    flex: 0.8,
+  projectsModal: { backgroundColor: '#2a2a2a', width: '90%', borderRadius: 12, padding: 20 },
+  projectsTitle: { color: '#00ff88', fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
+  projectItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1a1a1a',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8
   },
-  addButton: {
-    backgroundColor: '#00cc66'
-  },
-  playButton: {
-    backgroundColor: '#0066cc'
-  },
-  pauseButton: {
-    backgroundColor: '#cc3300'
-  },
-  footerButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-    textAlign: 'center',
-  }
+  projectNameModal: { color: 'white', fontWeight: 'bold', fontSize: 14 },
+  projectDate: { color: '#888', fontSize: 11 },
+  loadButton: { backgroundColor: '#00cc66', paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6 },
+  loadButtonText: { color: 'white', fontSize: 12, fontWeight: 'bold' },
+  deleteButton: { backgroundColor: '#cc3300', paddingVertical: 6, paddingHorizontal: 8, borderRadius: 6, marginLeft: 8 },
+  deleteButtonText: { color: 'white', fontSize: 14 },
+  closeProjectsButton: { marginTop: 10, padding: 12, backgroundColor: '#444', borderRadius: 8, alignItems: 'center' },
+  closeProjectsText: { color: 'white', fontWeight: 'bold' },
+  noProjects: { color: '#aaa', textAlign: 'center', marginVertical: 20 }
 });
+

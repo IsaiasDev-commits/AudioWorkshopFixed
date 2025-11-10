@@ -24,7 +24,7 @@ export const usePerformanceMode = (tracks: any[], isPlaying: boolean) => {
     const activeTracks = tracks.filter(track => !track.isMuted).length;
     const effectsCount = tracks.reduce((sum, track) => sum + track.effects.length, 0);
     
-    // Simular métricas (en app real usarías APIs específicas)
+    // Simular métricas 
     const newMetrics: PerformanceMetrics = {
       memoryUsage: Math.min(100, (tracks.length * 5) + (effectsCount * 2)),
       frameRate: performanceMode ? 60 : Math.max(30, 60 - (effectsCount * 2)),

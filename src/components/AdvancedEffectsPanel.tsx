@@ -40,14 +40,14 @@ export const AdvancedEffectsPanel: React.FC<AdvancedEffectsPanelProps> = ({
     gain: 2
   });
 
-  // ✅ Corregido: parámetros por defecto para EQ
+  // 
   const defaultEQParams = {
     lowGain: 0,
     midGain: 0,
     highGain: 0
   };
 
-  // ✅ Corregido: función que evita error TS2322
+  // Función que evita error TS2322
   const handleApplyEffect = () => {
     let effect: AudioEffect;
 

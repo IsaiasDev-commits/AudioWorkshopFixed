@@ -8,7 +8,7 @@ interface AudioMixerProps {
   onToggleMute: (trackId: string) => void;
   onApplyEffect: (trackId: string, effect: any) => void;
   onRemoveTrack: (trackId: string) => void;
-  onAdvancedEffects: (trackId: string) => void; // ← NUEVA PROP CORREGIDA
+  onAdvancedEffects: (trackId: string) => void; // 
 }
 
 export const AudioMixer: React.FC<AudioMixerProps> = ({
@@ -107,7 +107,7 @@ const TrackRow: React.FC<{
           <Text style={styles.controlText}>EQ</Text>
         </TouchableOpacity>
 
-        {/* Botón Efectos Avanzados - NUEVO */}
+        {/* Botón Efectos Avanzados */}
         <TouchableOpacity 
           style={[styles.controlButton, styles.advancedButton]}
           onPress={onAdvancedEffects}

@@ -11,8 +11,8 @@ export const useProjectManager = () => {
   useEffect(() => {
     const loadFromStorage = async () => {
       try {
-        // CORREGIDO: Tipo explícito para savedProjects
-        const savedProjects: AudioProject[] = []; // Vacío por ahora
+        // : Tipo explícito para savedProjects
+        const savedProjects: AudioProject[] = []; 
         setProjects(savedProjects);
         
         // Crear proyecto inicial si no hay proyectos
@@ -126,7 +126,7 @@ export const useProjectManager = () => {
         `"${project.name}"\n\nContenido preparado para descarga.`
       );
       
-      // En una app real, aquí iría la lógica de FileSystem
+      // lógica de FileSystem
       console.log('Project ready for export:', exportJson);
       
       return exportJson;
